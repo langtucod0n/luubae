@@ -1,0 +1,386 @@
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#define MAX 100
+
+using namespace std;
+
+struct taiKhoan {
+    char tenDangNhap[MAX];
+    char pass[MAX];
+    char hoTen[MAX];
+    char email[MAX];
+    int ngay, thang, nam;
+};
+
+bool checkTenDangNhap(taiKhoan* tk) {
+    return strstr(tk->tenDangNhap, "admin") == nullptr;
+}
+
+bool checkPass(taiKhoan* tk) {
+    if (strlen(tk->pass) < 6) return false;
+    bool inHoa = false, inThuong = false, coSo = false, kiTu = false;
+    char kiTuDacBiet[] = ";.?:~-_";
+    for (int i = 0; i < strlen(tk->pass); i++) {
+        if (isupper(tk->pass[i])) inHoa = true;
+        if (islower(tk->pass[i])) inThuong = true;
+        if (isdigit(tk->pass[i])) coSo = true;
+        if (strchr(kiTuDacBiet, tk->pass[i])) kiTu = true;
+    }
+    return inHoa && inThuong && coSo && kiTu;
+}
+
+bool checkEmail(taiKhoan* tk) {
+    return strchr(tk->email, '@') && strchr(tk->email, '.');
+}
+
+bool checkHoTen(taiKhoan* tk) {
+    int count = 0;
+    for (int i = 0; i < strlen(tk->hoTen); i++) {
+        if (tk->hoTen[i] == ' ') {
+            count++;
+        }
+    }
+    return count >= 1;
+}
+
+void nhap(taiKhoan* arr) {
+    cout << "Ten dang nhap: ";
+    cin.getline(arr->tenDangNhap, MAX);
+    while (!checkTenDangNhap(arr)) {
+        cout << "Ten dang nhap khong hop le, nhap lai: ";
+        cin.getline(arr->tenDangNhap, MAX);
+    }
+
+    char check[MAX];
+    do {
+        cout << "Nhap mat khau: ";
+        cin.getline(arr->pass, MAX);
+        cout << "Nhap lai mat khau: ";
+        cin.getline(check, MAX);
+
+        if (strcmp(arr->pass, check) != 0 || !checkPass(arr)) {
+            cout << "Mat khau khong hop le hoac khong trung khop! Nhap lai: ";
+        }
+
+    } while (strcmp(arr->pass, check) != 0 || !checkPass(arr));
+
+    cout << "Ho ten: ";
+    cin.getline(arr->hoTen, MAX);
+    while (!checkHoTen(arr)) {
+        cout << "Ten chua hop le, nhap lai: ";
+        cin.getline(arr->hoTen, MAX);
+    }
+
+    cout << "Email: ";
+    cin.getline(arr->email, MAX);
+    while (!checkEmail(arr)) {
+        cout << "Email chua hop le, nhap lai: ";
+        cin.getline(arr->email, MAX);
+    }
+
+    cout << "Ngay thang nam sinh: ";
+    cin >> arr->ngay >> arr->thang >> arr->nam;
+    cin.ignore();
+}
+
+taiKhoan** listTaiKhoan(taiKhoan** arr, int& n) {
+    cout << "Nhap so luong tai khoan: ";
+    cin >> n;
+    cin.ignore();
+    arr = new taiKhoan * [n];
+    for (int i = 0; i < n; i++) {
+        cout << "Nhap thong tin tai khoan " << i + 1 << ":" << endl;
+        arr[i] = new taiKhoan;
+        nhap(arr[i]);
+        cout << endl;
+    }
+    return arr;
+}
+
+void xuat(taiKhoan* arr) {
+    cout << "Ten dang nhap: " << arr->tenDangNhap << endl;
+    cout << "Mat khau: " << arr->pass << endl;
+
+    char ho[MAX], ten[MAX], tenlot[MAX];
+    char temp[MAX];
+    char* word[10];
+    int count = 0;
+
+    strcpy_s(temp, arr->hoTen);
+    char* next_token = nullptr;
+    char* token = strtok_s(temp, " ", &next_token);
+    while (token != nullptr) {
+        word[count] = token;
+        count++;
+        token = strtok_s(nullptr, " ", &next_token);
+    }
+
+    strcpy_s(ho, word[0]);
+    strcpy_s(ten, word[count - 1]);
+    tenlot[0] = '\0';
+    for (int i = 1; i < count - 1; i++) {
+        strcat_s(tenlot, word[i]);
+        if (i < count - 2) {
+            strcat_s(tenlot, " ");
+        }
+    }
+
+    cout << "Ho: " << ho << endl;
+    cout << "Ten lot: " << tenlot << endl;
+    cout << "Ten: " << ten << endl;
+    cout << "Email: " << arr->email << endl;
+    cout << "Tuoi: " << 2024 - arr->nam << endl;
+}
+
+void xuatList(taiKhoan** arr, int n) {
+    for (int i = 0; i < n; i++) {
+        cout << "Thong tin tai khoan " << i + 1 << " :" << endl;
+        xuat(arr[i]);
+        cout << endl;
+    }
+}
+
+void timKiem(taiKhoan** arr, int n) {
+    char nguon[MAX];
+    cout << "Nhap ten can tim: ";
+    cin.ignore();
+    cin.getline(nguon, MAX);
+    for (int i = 0; i < n; i++) {
+        if (strstr(arr[i]->hoTen, nguon)) {
+            xuat(arr[i]);
+        }
+    }
+}
+
+taiKhoan** themTaiKhoan(taiKhoan** arr, int& n) {
+    taiKhoan* them = new taiKhoan;;
+    cout << "nhap ten dang nhap: ";
+    cin.ignore();
+    cin.getline(them->tenDangNhap, MAX);
+    while (!checkTenDangNhap(them)) {
+        cout << "Ten dang nhap khong hop le, nhap lai: ";
+        cin.getline(them->tenDangNhap, MAX);
+    }
+    for (int i = 0; i < n; i++) {
+        if (strcmp(them->tenDangNhap, arr[i]->tenDangNhap) == 0) {
+            cout << "tai khoan da ton tai" << endl;
+            xuat(arr[i]);
+            delete them;
+            return arr;
+        }
+    }
+    taiKhoan** newarr = new taiKhoan * [n + 1];
+    for (int i = 0; i < n; i++) {
+        newarr[i] = arr[i];
+    }
+    newarr[n] = them;
+    char check[MAX];
+    do {
+        cout << "Nhap mat khau: ";
+        cin.getline(them->pass, MAX);
+        cout << "Nhap lai mat khau: ";
+        cin.getline(check, MAX);
+
+        if (strcmp(them->pass, check) != 0 || !checkPass(them)) {
+            cout << "Mat khau khong hop le hoac khong trung khop! Nhap lai: ";
+        }
+
+    } while (strcmp(them->pass, check) != 0 || !checkPass(them));
+
+    cout << "Ho ten: ";
+    cin.getline(them->hoTen, MAX);
+    while (!checkHoTen(them)) {
+        cout << "Ten chua hop le, nhap lai: ";
+        cin.getline(them->hoTen, MAX);
+    }
+
+    cout << "Email: ";
+    cin.getline(them->email, MAX);
+    while (!checkEmail(them)) {
+        cout << "Email chua hop le, nhap lai: ";
+        cin.getline(them->email, MAX);
+    }
+
+    cout << "Ngay thang nam sinh: ";
+    cin >> them->ngay >> them->thang >> them->nam;
+    cin.ignore();
+    n++;
+    delete[] arr;
+    return newarr;
+}
+
+void xoaTaiKhoan(taiKhoan** arr, int& n) {
+    char tendangnhap[MAX];
+    cout << "Nhap ten dang nhap can xoa: ";
+    cin.ignore();
+    cin.getline(tendangnhap, MAX);
+    for (int i = 0; i < n; i++) {
+        if (strcmp(arr[i]->tenDangNhap, tendangnhap) == 0) {
+            delete arr[i];
+            for (int j = i; j < n - 1; j++) {
+                arr[j] = arr[j + 1];
+            }
+            n--;
+            cout << "Xoa tai khoan thanh cong!\n";
+            return;
+        }
+    }
+    cout << "Khong tim thay tai khoan voi ten dang nhap: " << tendangnhap << endl;
+}
+
+typedef bool (*soSanh)(taiKhoan*, taiKhoan*);
+
+
+bool soSanhTheoTenDangNhap(taiKhoan* a, taiKhoan* b) {
+    return strcmp(a->tenDangNhap, b->tenDangNhap) > 0;
+}
+
+bool soSanhTheoHoTen(taiKhoan* a, taiKhoan* b) {
+    return strcmp(a->hoTen, b->hoTen) > 0;
+}
+
+bool soSanhTheoNgaySinh(taiKhoan* a, taiKhoan* b) {
+    if (a->nam != b->nam) return a->nam > b->nam;
+    if (a->thang != b->thang) return a->thang > b->thang;
+    return a->ngay > b->ngay;
+}
+
+void chucMungSinhNhat(taiKhoan** arr, int n) {
+    for (int i = 0; i < n; i++) {
+        if (arr[i]->thang == 11) {
+            cout << "Chuc mung sinh nhat " << arr[i]->hoTen << endl;
+        }
+    }
+}
+
+void sortAcs(taiKhoan** arr, int& n, soSanh ss)
+{
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (ss(arr[i], arr[j]) == true) {
+                taiKhoan* temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+    cout << "da sap xep theo thu tu tang dan" << endl;
+}
+
+void sortDesc(taiKhoan** arr, int& n, soSanh ss)
+{
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (ss(arr[i], arr[j]) == false) {
+                taiKhoan* temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+    cout << "da sap xep theo thu tu giam dan" << endl;
+}
+
+int main() {
+    int luaChon;
+    taiKhoan** arr = nullptr;
+    int n;
+    do {
+        cout << "=== Quan ly tai khoan ===" << endl;
+        cout << "1. Nhap danh sach" << endl;
+        cout << "2. Hien thi danh sach" << endl;
+        cout << "3. Tim kiem theo ho ten" << endl;
+        cout << "4. Nhap vao 1 tai khoan" << endl;
+        cout << "5. Xoa tai khoan" << endl;
+        cout << "6. Sap xep" << endl;
+        cout << "7. Chuc mung sinh nhat" << endl;
+        cout << "0. Thoat" << endl;
+        cout << "Lua chon: ";
+        cin >> luaChon;
+
+        switch (luaChon) {
+        case 1:
+            arr = listTaiKhoan(arr, n);
+            break;
+        case 2:
+            xuatList(arr, n);
+            break;
+        case 3:
+            timKiem(arr, n);
+            break;
+        case 4:
+            arr = themTaiKhoan(arr, n);
+            break;
+        case 5:
+            xoaTaiKhoan(arr, n);
+            break;
+        case 6:
+            int chucNang;
+            cout << "1. Tang dan" << endl;
+            cout << "2. Giam dan" << endl;
+            cout << "Nhap chuc nang: ";
+            cin >> chucNang;
+            switch (chucNang) {
+                case 1: {
+                    int doiTuong;
+                    cout << "1. Ten dang nhap" << endl;
+                    cout << "2. Tuoi" << endl;
+                    cout << "3. Ho ten" << endl;
+                    cout << "Nhap doi tuong: ";
+                    cin >> doiTuong;
+                    switch (doiTuong)
+                    {
+                    case 1:
+                        sortAcs(arr, n, soSanhTheoTenDangNhap);
+                        break;
+                    case 2:
+                        sortAcs(arr, n, soSanhTheoNgaySinh);
+                        break;
+                    case 3:
+                        sortAcs(arr, n, soSanhTheoHoTen);
+                        break;
+                    default:
+                        cout << "Doi tuong khong hop le" << endl;
+                    }
+                    break;
+                }
+                case 2: {
+                    int doiTuong;
+                    cout << "1. Ten dang nhap" << endl;
+                    cout << "2. Tuoi" << endl;
+                    cout << "3. Ho ten" << endl;
+                    cout << "Nhap doi tuong: ";
+                    cin >> doiTuong;
+                    switch (doiTuong)
+                    {
+                    case 1:
+                        sortDesc(arr, n, soSanhTheoTenDangNhap);
+                        break;
+                    case 2:
+                        sortDesc(arr, n, soSanhTheoNgaySinh);
+                        break;
+                    case 3:
+                        sortDesc(arr, n, soSanhTheoHoTen);
+                        break;
+                    default:
+                        cout << "Doi tuong khong hop le" << endl;
+                    }
+                    break;
+                }
+                default:
+                    cout << "Chuc nang khong hop le" << endl;
+            }
+        case 7: 
+            chucMungSinhNhat(arr, n);
+            break;
+        case 0:
+            cout << "Thoat chuong trinh!\n";
+            break;
+        default:
+            cout << "Lua chon khong hop le!\n";
+        }
+    } while (luaChon != 0);
+
+    return 0;
+}
